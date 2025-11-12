@@ -1,175 +1,160 @@
 -- Hello! I don't want to leak much of the code but u can have this, if ur not from hiddendevs aplication then what u doing here?
--- Hope this is enough
-
+-- Hope this is enough(it wasnt last time) so i added coments everywhere where i felt its needed
+-- This is to application reader and is not in the real code, if u read this first please check out loader.lua, this is long 157 lines without the coment lines prety sure
 local m = {}
-
-local loader = require(script.Parent.Loader)
-local simple = require(game.ReplicatedStorage.FormatNumber.Simple)
-local items = require(script.Parent.itmes)
-local moneyevent = game.ReplicatedStorage.Money
-local loadevent = game.ReplicatedStorage.load
-local loadframes = game.ReplicatedStorage.RemoteEvent
-local htp = game.HttpService
-local purchase = game.ReplicatedStorage.Purchaserbx
-local inve = game.ReplicatedStorage.inv
-local sell = game.ReplicatedStorage.sell
-
-local buy = game.ReplicatedStorage.buy
-buy.OnServerEvent:Connect(function(ply,name)
-	m.BuyStock(ply,name)
-end)
-
-local data = {}
-local cstock = {}
-local laststock = 0
-
-function m.Load(ply,cstock)
-	loadevent:FireClient(ply,items)
+local loader = require(script.Parent.Loader) -- loader
+local simple = require(game.ReplicatedStorage.FormatNumber.Simple) -- formater(simple)
+local items = require(script.Parent.itmes) -- items module, stores information about all the items
+local moneyevent = game.ReplicatedStorage.Money -- money event
+local loadevent = game.ReplicatedStorage.load --  loadevent, used to load inventory
+local loadframes = game.ReplicatedStorage.RemoteEvent -- load frames event, used to give the client data about the items on joining
+--local htp = game.HttpService -- gets http service, was used before
+local purchase = game.ReplicatedStorage.Purchaserbx -- purcase events
+local inve = game.ReplicatedStorage.inv -- inventory event, tells client their inventory
+local sell = game.ReplicatedStorage.sell -- sell event, client tells server they want to sell smth
+local buy = game.ReplicatedStorage.buy -- buy event, tells client server they want to buy smth
+local data = {} -- the data table, stores data for all players that are curently playing
+local cstock = {} -- the curent stock(not per player)
+local laststock = 0 -- last stock time
+function m.Load(ply :Player) -- loads the player
+	loadevent:FireClient(ply,items) -- tells player to load the items in the ui
 	local playerName = ply.Name
-	local playerData = loader.Load(playerName)
-	data[playerName] = playerData
-
+	local playerData = loader.Load(playerName) -- loads the data
+	data[playerName] = playerData -- gives the data to the data table
 	if ply then
-		local ls = Instance.new("Folder", ply)
+		local ls = Instance.new("Folder", ply) -- following lines create leaderstats
 		ls.Name = "leaderstats"
 
 		local Money = Instance.new("StringValue", ls)
 		Money.Name = "Money"
 		Money.Value = simple.FormatCompact(playerData.Money)
-		moneyevent:FireClient(ply,Money.Value,false)
+		moneyevent:FireClient(ply,Money.Value,false) -- tells player to update the money value, false meants that change didnt happen and the change meaning that the player bought or sold something
 		
-		local plystock = playerData.Stock
-		if not plystock then
-			plystock = cstock
-			playerData.LastStockTime = cstock
+		local plystock = playerData.Stock -- gets player stock
+		if not plystock then -- checks for the stock if none updates it
+			plystock = cstock -- updates curent stock time
+			playerData.LastStockTime = cstock -- updates curent stock time
 		end
-		local lst = if playerData.LastStockTime then plystock.LastStockTime else nil
-		local sec = laststock
+		local lst = if playerData.LastStockTime then playerData.LastStockTime else nil -- gets the stock time
+		local sec = laststock -- updates curent stock time
 		if sec == lst then
-			
+			-- no use for here right now but there could be in the feature
 		else
 			while true do
 				if cstock ~= {} then break end
 				task.wait(0.1)
 			end
-			data[playerName].Stock = cstock
+			data[playerName].Stock = cstock -- updates the player stock
 		end
 		if data[playerName].Stock == {} or data[playerName].Stock == nil then
 			while true do
-				if cstock ~= {} and cstock ~= nil then break end
-				print(1311621652312165)
+				if cstock ~= {} and cstock ~= nil then break end -- just wawit time till the stock doesnt exist
 				task.wait(0.1)
 			end
-			data[playerName].Stock = cstock
+			data[playerName].Stock = cstock -- updates the player stock
 		end
-		loadframes:FireClient(ply,data[playerName].Stock)
+		loadframes:FireClient(ply,data[playerName].Stock) -- tells player to load the stock
 	end
-	task.wait(2)
-	inve:FireClient(ply,playerData.Inv)
+	task.wait(2) -- waits just to be sure
+	inve:FireClient(ply,playerData.Inv) -- tells player to load their inv
 end
-
-function m.sellstock(ply,item)
+function m.sellstock(ply,item) -- checks if player has the item(stock) and then gives player the money and removes one item from it
 	local playerName = ply.Name
-	local plydata = data[playerName]
+	local plydata = data[playerName] -- Gets player data
 	local plystock = data[playerName].Stock
-	if plydata.Inv[item] and plydata.Inv[item] > 0 then
-		m.AddStat(playerName,"Money",items[item].Price *1.5 )
-		data[playerName].Inv[item] -= 1
-		inve:FireClient(ply,data[playerName].Inv)
-		return true
+	if plydata.Inv[item] and plydata.Inv[item] > 0 then -- checks if player has the item and if it has more than 0
+		m.AddStat(playerName,"Money",items[item].Price *1.5 ) --tells the module to add money to the player
+		data[playerName].Inv[item] -= 1 -- removes one item from the player stock
+		inve:FireClient(ply,data[playerName].Inv) -- tels the client their inventory
+		return true -- tells that it happened, no use right now but if client needs to know if it happened it could be tied to a remotefunction insted of remote event
 	else
-		return "code_no_item"
+		return "code_no_item" --tells that it happened, no use right now but if client needs to know if it happened it could be tied to a remotefunction insted of remote event
 	end
 end
-
-sell.OnServerEvent:Connect(function(ply,name)
+sell.OnServerEvent:Connect(function(ply,name) --When sell event fired runs sellstock function, that checks if player has the stock and then gives player the money
 	m.sellstock(ply,name)
 end)
-
-function m.BuyStock(ply,item)
+buy.OnServerEvent:Connect(function(ply,name)--When buy event fired runs buystock function, that checks if player has the item in stock and then give player the item and takes the money
+	m.BuyStock(ply,name)
+end)
+function m.BuyStock(ply :Player,item :string) --checks if player has the item in stock and then give player the item and takes the money
 	local playerName = ply.Name
-	local plydata = data[playerName]
-	local plystock = data[playerName].Stock
-	if plydata.Money >= items[item].Price then
-		if plystock[item] and plystock[item] > 0 then
-			m.AddStat(playerName,"Money",items[item].Price,true)
-			if not data[playerName].Inv[item] then
-				data[playerName].Inv[item] = 0
+	local plydata = data[playerName] -- gets player data
+	local plystock = data[playerName].Stock -- gets player stock
+	if plydata.Money >= items[item].Price then --checks if player has enough money
+		if plystock[item] and plystock[item] > 0 then -- checks if the item is in stock and if it has more than 0
+			m.AddStat(playerName,"Money",items[item].Price,true) --tells the module to take money from the player
+			if not data[playerName].Inv[item] then -- runs check just to be sure
+				data[playerName].Inv[item] = 0 -- if it does not have the item in inv then it adds it
 			end
-			data[playerName].Inv[item] += 1
-			data[playerName].Stock[item] -= 1
-			loadframes:FireClient(ply,data[playerName].Stock,"buy")
-			inve:FireClient(ply,data[playerName].Inv)
-			return true
+			data[playerName].Inv[item] += 1 -- adds one item to the player stock
+			data[playerName].Stock[item] -= 1 -- takes one of the item from the stock
+			loadframes:FireClient(ply,data[playerName].Stock,"buy") -- tells client new stock and the buy is just for the client to know that its not a stock restock but a buy
+			inve:FireClient(ply,data[playerName].Inv) -- tels the client their inventory
+			return true -- tells that it happened, no use right now but if client needs to know if it happened it could be tied to a remotefunction insted of remote event
 		end
 	else
-		return "code_no_money"
+		return "code_no_money" --tells that it happened, no use right now but if client needs to know if it happened it could be tied to a remotefunction insted of remote event
 	end
 end
-
-function m.Change(PlayerName,agrs,value)
+function m.Change(PlayerName :string,agrs :string,value :number) -- changes player agrs to value
 	data[PlayerName][agrs] = value
-	print(data[PlayerName])
+	print(data[PlayerName]) -- prints the data
 end
-
-function m.Add(PlayerName,agrs,value)
+function m.Add(PlayerName :string,agrs :string,value :number) -- adds value to player agrs, used to add some item or stat to the player if it didnt exist before
 	table.insert(data[PlayerName][agrs],value)
-	print(data[PlayerName])
+	print(data[PlayerName]) -- prints the data
 end
-
-function m.Remove(PlayerName,agrs,value)
+function m.Remove(PlayerName :string,agrs :string,value :number) -- removes value from player agrs
 	table.remove(data[PlayerName][agrs],table.find(data[PlayerName][agrs],value))
-	print(data[PlayerName])
+	print(data[PlayerName]) -- prints the data
 end
-
-function m.ChangeStats(PlayerName,agrs,value)
+function m.ChangeStats(PlayerName :string,agrs :string,value :number) -- changes stats to value and also updates the player leaderstats
 	local ply = game.Players:FindFirstChild(PlayerName)
 	if ply then
-		ply.leaderstats[agrs].Value = simple.FormatCompact(data[PlayerName][agrs])
+		ply.leaderstats[agrs].Value = simple.FormatCompact(data[PlayerName][agrs]) -- formats the stats so that its a string saying like 10k instead of 10000
 	end
-	data[PlayerName][agrs] = value
-	print(data[PlayerName])
+	data[PlayerName][agrs] = value -- changes the data of the player
+	print(data[PlayerName]) -- prints the data
 end
-
-function m.AddStat(PlayerName,agrs,value,negative)
-	local ply = game.Players:FindFirstChild(PlayerName)
-	if negative then
-		data[PlayerName][agrs] -= value
+function m.AddStat(PlayerName :string,agrs :string,value :number,negative :BoolValue)
+	local ply = game.Players:FindFirstChild(PlayerName) -- gets the player
+	if negative then --checsk if its negative or positive
+		data[PlayerName][agrs] -= value -- removes value from the stats
 	else
-	data[PlayerName][agrs] += value
+		data[PlayerName][agrs] += value -- adds value to the stats
 	end
-	moneyevent:FireClient(ply,simple.FormatCompact(data[PlayerName][agrs]),simple.FormatCompact(value),not negative)
+	moneyevent:FireClient(ply,simple.FormatCompact(data[PlayerName][agrs]),simple.FormatCompact(value),not negative) -- tells client that the stats changed and also tells client by how much it changed, negative tells client if its taken or given
 	if ply then
-		ply.leaderstats[agrs].Value = simple.FormatCompact(data[PlayerName][agrs])
+		ply.leaderstats[agrs].Value = simple.FormatCompact(data[PlayerName][agrs]) -- updates the leaderstats
 	end
-	print(data[PlayerName])
+	print(data[PlayerName]) -- prints the data
 end
-
-function m.stockupdate(stck,lasttime)
-	warn(stck)
-	cstock = stck
-	laststock = laststock
-	for _, ply in pairs(game.Players:GetChildren()) do
-		loadframes:FireClient(ply,stck)
-		if data[ply.Name] ~= {} and data[ply.Name] ~= nil and data[ply.Name] then task.wait(1) end
-		data[ply.Name].Stock = stck
-		data[ply.Name].LastStockTime = lasttime
+function m.stockupdate(stck,lasttime :number) -- updates stock
+	warn(stck) -- warns the stock for testing purposes
+	cstock = stck -- updats the stock
+	laststock = laststock -- updates the latest stock time
+	for _, ply in pairs(game.Players:GetChildren()) do -- for every player, tell them the stock has updated
+		spawn(function() -- spawns function so that if there is delay it can go to the next player without wwaiting
+		loadframes:FireClient(ply,stck) -- tell the player new stock
+		if data[ply.Name] ~= {} and data[ply.Name] ~= nil and data[ply.Name] then task.wait(2) end -- checks for data just to be sure
+		data[ply.Name].Stock = stck -- updates the stock
+		data[ply.Name].LastStockTime = lasttime -- stores the last stock update time
+		end)
 	end
 end
-
-function m.GetData(PlayerName,agrs)
-	if agrs == "all" then
+function m.GetData(PlayerName :Player,agrs :string)
+	if agrs == "all" then -- if all is given then return all data
 		return data[PlayerName]
-	end	print(data[PlayerName])
-	return data[PlayerName][agrs]
+	end	print(data[PlayerName])-- prints the data just for testing
+	return data[PlayerName][agrs] -- returns the data requested
 end
-
-function m.Save(PlayerName)
-	loader.Save(PlayerName,data[PlayerName])
-	print(data[PlayerName])
-	task.wait()
-	task.wait(0.5)
-	data[PlayerName] = nil
+function m.Save(PlayerName) -- saves the data
+	loader.Save(PlayerName,data[PlayerName]) -- tells loader to save
+	print(data[PlayerName]) -- pritns whats saved just for testing
+	task.wait() -- wwaits
+	task.wait(0.5) -- waits again(dont ask me why 2 times)
+	data[PlayerName] = nil -- removes the data
 end
-
 return m
+-- without the coments added its around 157 lines in the original script in studio
