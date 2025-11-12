@@ -1,6 +1,6 @@
 -- Hello! I don't want to leak much of the code but u can have this, if ur not from hiddendevs aplication then what u doing here?
 -- Hope this is enough(it wasnt last time) so i added coments everywhere where i felt its needed
--- This is to application reader and is not in the real code, if u read this first please check out loader.lua, this is long 157 lines without the coment lines prety sure
+-- This is to application reader and is not in the real code
 local m = {}
 local loader = require(script.Parent.Loader) -- loader
 local simple = require(game.ReplicatedStorage.FormatNumber.Simple) -- formater(simple)
@@ -16,10 +16,15 @@ local buy = game.ReplicatedStorage.buy -- buy event, tells client server they wa
 local data = {} -- the data table, stores data for all players that are curently playing
 local cstock = {} -- the curent stock(not per player)
 local laststock = 0 -- last stock time
+local ds = game:GetService("DataStoreService"):GetDataStore("main")
+local dataexample = { -- just to know the data structure
+	["Money"] = 2000,
+	["Inv"] = {}
+}
 function m.Load(ply :Player) -- loads the player
 	loadevent:FireClient(ply,items) -- tells player to load the items in the ui
 	local playerName = ply.Name
-	local playerData = loader.Load(playerName) -- loads the data
+	local playerData = m.RealLoad(playerName) -- loads the data
 	data[playerName] = playerData -- gives the data to the data table
 	if ply then
 		local ls = Instance.new("Folder", ply) -- following lines create leaderstats
@@ -157,4 +162,55 @@ function m.Save(PlayerName) -- saves the data
 	data[PlayerName] = nil -- removes the data
 end
 return m
--- without the coments added its around 157 lines in the original script in studio
+
+-- Loading/saving
+function m.RealLoad(playername :string) -- load
+	local n = 0
+	while true do -- like for loob but works better than for loop learned this in c++, loads the data 7 times on succses returns the data if it didnt load in thoos 7 trys then returns dataexample
+	local sucsess,data = pcall(function()
+		return ds:GetAsync(playername) -- trys to load
+	end)
+	n += 1 -- updates n
+	if sucsess and data then
+		return data -- returns data if loaded
+	end
+	if n >= 7 then -- checks if it loaded 7 times or more
+		return sucsess and data or dataexample -- if its not loaded returns data examople
+	end
+	end
+	task.wait(0.1)
+end
+
+function m.RealSave(player :string, data)
+	-- Basic validation
+	if not playerName or type(playerName) ~= "string" or playerName == "" then -- makes sure that player name is string
+		warn("Invalid playerName for save: must be a non-empty string")
+		return false -- tells that it didnt load, could be useful for debugging
+	end
+	if not value then -- checks for value
+		warn("Invalid value for save: cannot be nil")
+		return false -- tells that it didnt load, could be useful for debugging
+	end
+	local n = 0
+	local maxRetries = 7
+	local baseWait = 0.1  -- Starting wait time
+	while n < maxRetries do
+		local success, err = pcall(function()
+			ds:SetAsync(playerName, value)
+		end)
+
+		if success then
+			print("saved player: " .. playerName)  -- Optional success log
+			return true -- tells that it loaded, could be useful for debugging
+		else
+			n = n + 1
+			warn("Save attempt " .. n .. " failed for player " .. playerName .. ": " .. tostring(err))
+			if n < maxRetries then
+				local waitTime = baseWait * (2 ^ (n - 1))  -- Exponential backoff: 0.1, 0.2, 0.4, 0.8, 1.6, 3.2, 6.4s
+				task.wait(waitTime)
+			end
+		end
+	end
+	warn("Failed to save data for player " .. playerName .. " after " .. maxRetries .. " attempts")
+	return false -- tells that it didnt load, could be useful for debugging
+end
