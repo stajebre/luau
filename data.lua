@@ -154,15 +154,13 @@ function m.GetData(PlayerName :Player,agrs :string)
 	end	print(data[PlayerName])-- prints the data just for testing
 	return data[PlayerName][agrs] -- returns the data requested
 end
-function m.Save(PlayerName) -- saves the data
-	loader.Save(PlayerName,data[PlayerName]) -- tells loader to save
+function m.Save(PlayerName) -- saves the data or atleast tells the realsave to save the data, gets the playerdata and then insures that it no longer stays after saving
+	m.RealSave(PlayerName,data[PlayerName]) -- tells loader to save
 	print(data[PlayerName]) -- pritns whats saved just for testing
 	task.wait() -- wwaits
 	task.wait(0.5) -- waits again(dont ask me why 2 times)
 	data[PlayerName] = nil -- removes the data
 end
-return m
-
 -- Loading/saving
 function m.RealLoad(playername :string) -- load
 	local n = 0
@@ -180,7 +178,6 @@ function m.RealLoad(playername :string) -- load
 	end
 	task.wait(0.1)
 end
-
 function m.RealSave(player :string, data)
 	-- Basic validation
 	if not playerName or type(playerName) ~= "string" or playerName == "" then -- makes sure that player name is string
@@ -198,7 +195,6 @@ function m.RealSave(player :string, data)
 		local success, err = pcall(function()
 			ds:SetAsync(playerName, value)
 		end)
-
 		if success then
 			print("saved player: " .. playerName)  -- Optional success log
 			return true -- tells that it loaded, could be useful for debugging
@@ -214,3 +210,4 @@ function m.RealSave(player :string, data)
 	warn("Failed to save data for player " .. playerName .. " after " .. maxRetries .. " attempts")
 	return false -- tells that it didnt load, could be useful for debugging
 end
+return m
