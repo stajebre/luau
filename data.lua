@@ -1,6 +1,6 @@
 -- Hello! I don't want to leak much of the code but u can have this, if ur not from hiddendevs aplication then what u doing here?
 -- Hope this is enough(it wasnt last time) so i added coments everywhere where i felt its needed
--- This is to application reader and is not in the real code
+-- This is to application reader and is not in the real code, my aplogies for having it so tighyly compacted, tryna save u from counting empty lines
 local m = {}
 local loader = require(script.Parent.Loader) -- loader
 local simple = require(game.ReplicatedStorage.FormatNumber.Simple) -- formater(simple)
