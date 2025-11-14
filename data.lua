@@ -1,16 +1,78 @@
--- Hello! I don't want to leak much of the code but u can have this, if ur not from hiddendevs aplication then what u doing here?
--- Note: Some functions have returns that go to nowhere, this is so if in the feautre if it needs to know if it failed or it didnt and for what reason, its an option that has a tought for thoos who will be adding on the script
--- This is to application reader and is not in the real code, my aplogies for having it so tighyly compacted, tryna save u from counting empty lines
+--!nonstrict
+--[[ 
+
+Description:
+
+	This code handles player data and stock data.
+	Is ment to be called by other scripts and has the needed event calls in it.
+	The idea: Use tables to store data insted of instances.
+	Note: Some functions have returns that go to nowhere, this is so if in the feautre if it needs to know if it failed or it didnt and for what reason, its an option that has a tought for thoos who will be adding on the script.
+
+	DOCUMENTATION:
+
+	m.Load:
+	Sets up player data that it gets from m.RealLoad.
+
+	m.RealLoad:
+	Gets data from the datastore, trys more times just to be sure.
+
+	m.Save:
+	Calls m.RealSave function and removes the player data from the table afterwards.
+
+	m.RealSave:
+	Saves data and trys a few times to save it just in case
+
+	m.sellstock:
+	Sells player stock by removing one stock(only if the player has it) in the inventory and awaring the money.
+
+	m.BuyStock:
+	Buys player stuck by adding one stock of the player and removing the money, also checks if it can do that like if there is stock of the item and if the player has money.
+	
+	m.GetData
+	Returns player data of the agrs, if agrs is all returns all the data.
+
+	m.Change:
+	changes agrs player data of the player to a value.
+
+	m.Add:
+	Inserts value to the agrs of player data.
+
+	m.Remove:
+	Removes value from player agrs table.
+
+	m.ChgeStats:
+	Changes value player data of the player to a agrs(money,rebirth,killcounter,level what ever), changes the learderstats value to formated version of the value.
+
+	m.AddStat:
+	Adds agrs player data of the player to a value, changes the learderstats value to formated version of the value. Negative is for if to add or remove.
+
+	m.stockupdate:
+	Updates stock per player, updates the current stock.
+
+]]
 local m = {}
+
+-----------------------------
+-- SERVICES --
+-----------------------------
+
 local ds = game:GetService("DataStoreService"):GetDataStore("main")
--- Modules
+
+-----------------------------
+-- MODULES  --
+-----------------------------
+
 local Modules = script.Parent
 local loader = require(Modules.Loader)
 local items = require(Modules.itmes)
 local RepStrg = game:GetService("ReplicatedStorage")
 local formater = RepStrg.FormatNumber
 local simple = require(formater.Simple)
--- Events
+
+-----------------------------
+-- EVENTS --
+-----------------------------
+
 local moneyevent = RepStrg.Money
 local loadevent = RepStrg.load
 local loadframes = RepStrg.RemoteEvent
@@ -18,7 +80,11 @@ local purchase = RepStrg.Purchaserbx
 local inve = RepStrg.inv
 local sell = RepStrg.sell
 local buy = RepStrg.buy
--- the data table, stores data for all players that are curently playing
+
+-----------------------------
+-- VARIABLES
+-----------------------------
+
 local data = {} 
 -- the curent stock(not per player)
 local cstock = {} 
@@ -29,9 +95,15 @@ local dataexample = {
 	["Stock"] = {},
 	["LastStockTime"] = nil
 }
+
+-----------------------------
+ -- FUNCTIONS --
+-----------------------------
+
 -- loading
 function m.Load(ply :Player)
-	loadevent:FireClient(ply,items)
+
+	loadevent:FireClient(ply, items)
 
 	local playerName = ply.Name
 	local playerData = m.RealLoad(playerName)
@@ -76,14 +148,15 @@ function m.Load(ply :Player)
 			data[playerName].Stock = cstock
 		end
 		-- tell player to load the stock
-		loadframes:FireClient(ply,data[playerName].Stock) 
+		loadframes:FireClient(ply, data[playerName].Stock) 
 	end
 	-- waits just in case and then tells player to load their inv
 	task.wait(2)
-	inve:FireClient(ply,playerData.Inv)
+	inve:FireClient(ply, playerData.Inv)
 end
 -- load from datastore function 
 function m.RealLoad(playername :string)
+
 	local n = 0
 	-- loads 7 times just to be sure
 	while true do
@@ -247,7 +320,7 @@ function m.AddStat(PlayerName :string, agrs :string, value :number, negative :Bo
 	print(data[PlayerName])
 end
  -- updates stock
-function m.stockupdate(stck,lasttime :number)
+function m.stockupdate(stck, lasttime :number)
 	-- updates the stock variables
 	warn(stck)
 	cstock = stck
@@ -267,5 +340,3 @@ function m.stockupdate(stck,lasttime :number)
 end
 
 return m
-
--- aprox 205 lines without lines with coments or empty lines
