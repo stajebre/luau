@@ -32,9 +32,11 @@ local dataexample = {
 -- loading
 function m.Load(ply :Player)
 	loadevent:FireClient(ply,items)
+
 	local playerName = ply.Name
 	local playerData = m.RealLoad(playerName)
 	data[playerName] = playerData
+
 	if ply then
 		local ls = Instance.new("Folder", ply) 
 		ls.Name = "leaderstats"
@@ -106,6 +108,7 @@ function m.Save(PlayerName)
 	task.wait(0.5)
 	data[PlayerName] = nil
 end
+-- saves the data to the datastore
 function m.RealSave(playerName :string, data)
 	-- Basic validation
 	if not playerName or type(playerName) ~= "string" or playerName == "" then
