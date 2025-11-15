@@ -77,22 +77,27 @@ local simple = require(formater.Simple)
 -----------------------------
 
 local MoneyEvent = RepStrg:WaitForChild('Money')
-local LoadEvent = RepStrg:WaitForChild('load')
-local LoadFramesEvent = RepStrg:WaitForChild('RemoteEvent')
+local LoadFramesEvent = RepStrg:WaitForChild('loadFrames')
+local LoadStockEvent = RepStrg:WaitForChild('loadSTock')
 local PurchaseEvent = RepStrg:WaitForChild('Purchaserbx')
 local InventoryEvent = RepStrg:WaitForChild('inv')
 local SellEvent = RepStrg:WaitForChild('sell')
 local BuyEvent = RepStrg:WaitForChild('buy')
 
 -----------------------------
--- VARIABLES
+-- VARIABLES --
 -----------------------------
 
 -- Stores all active player data
 local data = {} 
 -- Stores the curent stock(not per player)
 local curentStock = {} 
-local lastStockTime = 0 
+local lastStockTime = 0
+
+-----------------------------
+-- CONSTANTS --
+-----------------------------
+
 local DATA_EXAMPLE = { 
 	["Money"] = 2000,
 	["Inv"] = {},
@@ -104,14 +109,10 @@ local DATA_EXAMPLE = {
 -- FUNCTIONS --
 -----------------------------
 
-local function isEmptyTable(t)
-	return type(t) == "table" and next(t) == nil
-end
-
 -- Loading
 function m.Load(player: Player)
 
-	LoadEvent:FireClient(player, items)
+	LoadFramesEvent:FireClient(player, items)
 
 	local playerName = player.Name
 	data[playerName] = m.RealLoad(playerName)
@@ -126,7 +127,7 @@ function m.Load(player: Player)
 		moneyInstance.Parent = leaderstats
 		moneyInstance.Name = "Money"
 		moneyInstance.Value = simple.FormatCompact(data[playerName].Money)
-		MoneyEvent:FireClient(player, Money.Value, false)
+		MoneyEvent:FireClient(player, moneyInstance.Value, false)
 
 		if not data[playerName].Stock then
 			data[playerName].Stock = curentStock
@@ -134,7 +135,7 @@ function m.Load(player: Player)
 		end
 
 		-- fallback if empty or nil
-		
+
 		local lastStockTimeLocal = if data[playerName].LastStockTime then data[playerName].LastStockTime else nil
 		if lastStockTime == lastStockTimeLocal then
 			-- no use for here right now but there could be in the feature
@@ -146,7 +147,7 @@ function m.Load(player: Player)
 			data[playerName].Stock = curentStock
 		end
 		-- tell player to load the stock
-		LoadFramesEvent:FireClient(player, data[playerName].Stock)
+		LoadStockEvent:FireClient(player, data[playerName].Stock)
 	end
 	task.wait(0.1)
 	InventoryEvent:FireClient(player, data[playerName].Inv)
@@ -241,7 +242,7 @@ end)
 function m.BuyStock(player: Player,item: string)
 	-- player stuff
 	local playerName = player.Name
-	
+
 	if not data[playerName].Inv[item] then	
 		data[playerName].Inv[item] = 0
 	end
@@ -256,7 +257,7 @@ function m.BuyStock(player: Player,item: string)
 
 			data[playerName].Inv[item] += 1
 			data[playerName].Stock[item] -= 1
-			LoadFramesEvent:FireClient(player, data[playerName].Stock,"Event")
+			LoadStockEvent:FireClient(player, data[playerName].Stock,"Event")
 			InventoryEvent:FireClient(player, data[playerName].Inv)
 			return true
 		end
@@ -332,7 +333,7 @@ function m.stockupdate(localStock, lastTime: number)
 		if data[player.Name] and next(data[player.Name]) ~= nil then
 			data[player.Name].Stock = localStock
 			data[player.Name].LastStockTime = lastTime
-			LoadFramesEvent:FireClient(player, localStock) 
+			LoadStockEvent:FireClient(player, localStock) 
 			print(1412515)
 		end
 	end
