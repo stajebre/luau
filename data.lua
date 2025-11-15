@@ -154,13 +154,13 @@ function m.Load(player: Player)
 end
 
 -- load from datastore function 
-function m.RealLoad(playername: string)
+function m.RealLoad(playerName: string)
 
 	local timesTryed = 0
 	-- loads 7 times just to be sure
 	while true do
 		local sucsess,data = pcall(function()
-			return DataStoreService:GetAsync(playername)
+			return DataStoreService:GetAsync(playerName)
 		end)
 		timesTryed += 1
 		if sucsess and data then
@@ -173,8 +173,8 @@ function m.RealLoad(playername: string)
 	task.wait(0.1)
 end
 -- Save function withoud the dataastore
-function m.Save(PlayerName)
-	m.RealSave(PlayerName,data[PlayerName])
+function m.Save(PlayerName: string)
+	m.RealSave(PlayerName, data[PlayerName])
 	print(data[PlayerName])
 	-- waits for player to 
 	task.wait(0.5)
