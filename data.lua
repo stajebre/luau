@@ -59,7 +59,8 @@ local m = {}
 -- SERVICES --
 -----------------------------
 
-local ds = game:GetService("DataStoreService"):GetDataStore("main")
+local DataStoreService = game:GetService('DataStoreService'):GetDataStore("main")
+local ReplicatedStorage = game:GetService('ReplicatedStorage')
 
 -----------------------------
 -- MODULES  --
@@ -68,21 +69,20 @@ local ds = game:GetService("DataStoreService"):GetDataStore("main")
 local Modules = script.Parent
 local loader = require(Modules.Loader)
 local items = require(Modules.itmes)
-local RepStrg = game:GetService('ReplicatedStorage')
-local formater = RepStrg:WaitForChild('FormatNumber')
+local formater = ReplicatedStorage:WaitForChild('FormatNumber')
 local simple = require(formater.Simple)
 
 -----------------------------
 -- EVENTS --
 -----------------------------
 
-local MoneyEvent = RepStrg:WaitForChild('Money')
-local LoadFramesEvent = RepStrg:WaitForChild('loadFrames')
-local LoadStockEvent = RepStrg:WaitForChild('loadSTock')
-local PurchaseEvent = RepStrg:WaitForChild('Purchaserbx')
-local InventoryEvent = RepStrg:WaitForChild('inv')
-local SellEvent = RepStrg:WaitForChild('sell')
-local BuyEvent = RepStrg:WaitForChild('buy')
+local MoneyEvent = ReplicatedStorage:WaitForChild('Money')
+local LoadFramesEvent = ReplicatedStorage:WaitForChild('loadFrames')
+local LoadStockEvent = ReplicatedStorage:WaitForChild('loadSTock')
+local PurchaseEvent = ReplicatedStorage:WaitForChild('Purchaserbx')
+local InventoryEvent = ReplicatedStorage:WaitForChild('inv')
+local SellEvent = ReplicatedStorage:WaitForChild('sell')
+local BuyEvent = ReplicatedStorage:WaitForChild('buy')
 
 -----------------------------
 -- VARIABLES --
@@ -160,7 +160,7 @@ function m.RealLoad(playername: string)
 	-- loads 7 times just to be sure
 	while true do
 		local sucsess,data = pcall(function()
-			return ds:GetAsync(playername)
+			return DataStoreService:GetAsync(playername)
 		end)
 		timesTryed += 1
 		if sucsess and data then
@@ -199,7 +199,7 @@ function m.RealSave(playerName: string, data)
 	-- Trys to load player data with the settings above
 	while timesTryed < maxRetries do
 		local success, err = pcall(function()
-			ds:SetAsync(playerName, data)
+			DataStoreService:SetAsync(playerName, data)
 		end)
 		if success then
 			print("saved player: " .. playerName) 
