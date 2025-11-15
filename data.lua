@@ -220,7 +220,7 @@ end
 SellEvent.OnServerEvent:Connect(function(player, name) 
 	m.sellstock(player, name)
 end)
--- if player has the stock gives player the money and removes the stock
+-- If player has the stock gives player the money and removes the stock
 function m.sellstock(player:  player, item: string)
 	local playerName = player.Name
 	local playerData = data[playerName]
@@ -238,9 +238,9 @@ end
 BuyEvent.OnServerEvent:Connect(function(player, name)
 	m.BuyStock(player, name)
 end)
---checks if player has the item in stock and then give player the item and takes the money
+-- Checks if player has the item in stock and then give player the item and takes the money
 function m.BuyStock(player: Player, item: string)
-	-- player stuff
+	-- Player stuff
 	local playerName = player.Name
 
 	if not data[playerName].Inv[item] then	
