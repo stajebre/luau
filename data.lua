@@ -120,13 +120,13 @@ function m.Load(player: Player)
 
 	if player then
 		local leaderstats = Instance.new("Folder")
-		leaderstats.Parent = player 
 		leaderstats.Name = "leaderstats"
+		leaderstats.Parent = player 
 
 		local moneyInstance = Instance.new("StringValue")
-		moneyInstance.Parent = leaderstats
 		moneyInstance.Name = "Money"
 		moneyInstance.Value = simple.FormatCompact(data[playerName].Money)
+		moneyInstance.Parent = leaderstats
 		MoneyEvent:FireClient(player, moneyInstance.Value, false)
 
 		if not data[playerName].Stock then
