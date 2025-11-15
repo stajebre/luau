@@ -257,7 +257,7 @@ function m.BuyStock(player: Player, item: string)
 
 			data[playerName].Inv[item] += 1
 			data[playerName].Stock[item] -= 1
-			LoadStockEvent:FireClient(player, data[playerName].Stock,"Event")
+			LoadStockEvent:FireClient(player, data[playerName].Stock, "Event")
 			InventoryEvent:FireClient(player, data[playerName].Inv)
 			return true
 		end
@@ -286,7 +286,7 @@ function m.Add(PlayerName: string, agrs: string, value: number)
 end
 -- Removes value from player agrs
 function m.Remove(PlayerName: string, agrs: string, value: number)
-	table.remove(data[PlayerName][agrs],table.find(data[PlayerName][agrs],value))
+	table.remove(data[PlayerName][agrs], table.find(data[PlayerName][agrs],value))
 	print(data[PlayerName]) -- prints the data
 end 
 -- Changes stats to value and also updates the player leaderstats
