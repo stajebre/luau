@@ -221,7 +221,7 @@ SellEvent.OnServerEvent:Connect(function(player, name)
 	m.sellstock(player, name)
 end)
 -- if player has the stock gives player the money and removes the stock
-function m.sellstock(player, item)
+function m.sellstock(player:  player, item: string)
 	local playerName = player.Name
 	local playerData = data[playerName]
 	local playerstock = data[playerName].Stock
@@ -239,7 +239,7 @@ BuyEvent.OnServerEvent:Connect(function(player, name)
 	m.BuyStock(player, name)
 end)
 --checks if player has the item in stock and then give player the item and takes the money
-function m.BuyStock(player: Player,item: string)
+function m.BuyStock(player: Player, item: string)
 	-- player stuff
 	local playerName = player.Name
 
@@ -285,7 +285,7 @@ function m.Add(PlayerName: string, agrs: string, value: number)
 	print(data[PlayerName])
 end
 -- Removes value from player agrs
-function m.Remove(PlayerName: string,agrs: string,value: number)
+function m.Remove(PlayerName: string, agrs: string, value: number)
 	table.remove(data[PlayerName][agrs],table.find(data[PlayerName][agrs],value))
 	print(data[PlayerName]) -- prints the data
 end 
