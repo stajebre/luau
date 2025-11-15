@@ -135,9 +135,8 @@ function m.Load(player: Player)
 
 		-- fallback if empty or nil
 		
-		local lastStockTime = if data[playerName].LastStockTime then data[playerName].LastStockTime else nil
-		local sec = lastStockTime
-		if sec == lastStockTime then
+		local lastStockTimeLocal = if data[playerName].LastStockTime then data[playerName].LastStockTime else nil
+		if lastStockTime == lastStockTimeLocal then
 			-- no use for here right now but there could be in the feature
 		else
 			data[playerName].Stock = curentStock 
